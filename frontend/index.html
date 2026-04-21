@@ -1,0 +1,1631 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CodeCollab • Code Review Platform</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:ital,wght@0,300;0,400;0,500;1,400&family=Syne:wght@400;500;600;700;800&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,400&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css" rel="stylesheet" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-javascript.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-python.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-java.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-c.min.js"></script>
+  <style>
+    /* ========== YOUR EXISTING STYLES (unchanged) ========== */
+    :root {
+      --bg-0: #080c14;
+      --bg-1: #0d1220;
+      --bg-2: #111827;
+      --bg-3: #1a2235;
+      --bg-4: #212d42;
+      --surface: rgba(255,255,255,0.04);
+      --surface-hover: rgba(255,255,255,0.07);
+      --border: rgba(255,255,255,0.07);
+      --border-active: rgba(99,179,237,0.4);
+      --accent-1: #63b3ed;
+      --accent-2: #76e4f7;
+      --accent-3: #9f7aea;
+      --text-primary: #e8edf5;
+      --text-secondary: #8899b0;
+      --text-muted: #4a5568;
+      --success: #68d391;
+      --danger: #fc8181;
+      --warning: #f6ad55;
+      --glow-blue: 0 0 30px rgba(99,179,237,0.15);
+      --glow-purple: 0 0 30px rgba(159,122,234,0.15);
+      --radius-sm: 6px;
+      --radius-md: 10px;
+      --radius-lg: 16px;
+      --radius-xl: 24px;
+      --transition: 0.2s cubic-bezier(0.4,0,0.2,1);
+      --transition-slow: 0.4s cubic-bezier(0.4,0,0.2,1);
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: var(--bg-0);
+      color: var(--text-primary);
+      font-family: 'DM Sans', sans-serif;
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background:
+        radial-gradient(ellipse 80% 50% at 20% 10%, rgba(99,179,237,0.06) 0%, transparent 60%),
+        radial-gradient(ellipse 60% 40% at 80% 80%, rgba(159,122,234,0.05) 0%, transparent 60%),
+        radial-gradient(ellipse 40% 60% at 50% 50%, rgba(118,228,247,0.03) 0%, transparent 70%);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    body::after {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+      background-size: 200px 200px;
+      pointer-events: none;
+      z-index: 0;
+      opacity: 0.5;
+    }
+
+    #app {
+      position: relative;
+      z-index: 1;
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 0 20px 40px;
+    }
+
+    header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 18px 28px;
+      margin: 0 -20px 32px;
+      background: rgba(8,12,20,0.85);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border-bottom: 1px solid var(--border);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      animation: slideDown 0.5s cubic-bezier(0.4,0,0.2,1) both;
+    }
+
+    @keyframes slideDown {
+      from { transform: translateY(-100%); opacity: 0; }
+      to { transform: translateY(0); opacity: 1; }
+    }
+
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      text-decoration: none;
+    }
+
+    .logo-icon {
+      width: 38px;
+      height: 38px;
+      background: linear-gradient(135deg, var(--accent-1), var(--accent-3));
+      border-radius: var(--radius-md);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 16px;
+      color: white;
+      box-shadow: 0 4px 15px rgba(99,179,237,0.3);
+      flex-shrink: 0;
+    }
+
+    .logo-text {
+      font-family: 'Syne', sans-serif;
+      font-weight: 800;
+      font-size: 1.4rem;
+      background: linear-gradient(to right, #e8edf5, #63b3ed);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      letter-spacing: -0.02em;
+    }
+
+    .logo-badge {
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      background: linear-gradient(135deg, rgba(99,179,237,0.2), rgba(159,122,234,0.2));
+      border: 1px solid rgba(99,179,237,0.3);
+      color: var(--accent-1);
+      padding: 2px 8px;
+      border-radius: 20px;
+      text-transform: uppercase;
+    }
+
+    #auth-section {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      padding: 8px 18px;
+      border: none;
+      border-radius: var(--radius-md);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 13.5px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all var(--transition);
+      white-space: nowrap;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .btn::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: rgba(255,255,255,0.07);
+      opacity: 0;
+      transition: opacity var(--transition);
+    }
+    .btn:hover::before { opacity: 1; }
+
+    .btn-primary {
+      background: linear-gradient(135deg, #4299e1, #6b46c1);
+      color: white;
+      box-shadow: 0 4px 14px rgba(66,153,225,0.3);
+    }
+    .btn-primary:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 6px 20px rgba(66,153,225,0.4);
+    }
+    .btn-primary:active { transform: translateY(0); }
+
+    .btn-ghost {
+      background: var(--surface);
+      color: var(--text-secondary);
+      border: 1px solid var(--border);
+    }
+    .btn-ghost:hover {
+      background: var(--surface-hover);
+      color: var(--text-primary);
+      border-color: rgba(255,255,255,0.12);
+    }
+
+    .btn-danger {
+      background: rgba(252,129,129,0.12);
+      color: var(--danger);
+      border: 1px solid rgba(252,129,129,0.2);
+    }
+    .btn-danger:hover {
+      background: rgba(252,129,129,0.2);
+      transform: translateY(-1px);
+    }
+
+    .btn-sm { padding: 6px 13px; font-size: 12.5px; }
+    .btn-icon { padding: 7px 10px; }
+
+    .user-chip {
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 30px;
+      padding: 5px 14px 5px 6px;
+    }
+
+    .user-avatar {
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--accent-1), var(--accent-3));
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
+      font-weight: 700;
+      color: white;
+      flex-shrink: 0;
+    }
+
+    .main-grid {
+      display: grid;
+      grid-template-columns: 320px 1fr;
+      gap: 20px;
+      align-items: start;
+    }
+
+    @media (max-width: 900px) {
+      .main-grid { grid-template-columns: 1fr; }
+    }
+
+    .sidebar {
+      position: sticky;
+      top: 88px;
+      animation: fadeInLeft 0.6s cubic-bezier(0.4,0,0.2,1) 0.1s both;
+    }
+
+    @keyframes fadeInLeft {
+      from { opacity: 0; transform: translateX(-20px); }
+      to { opacity: 1; transform: translateX(0); }
+    }
+
+    .panel {
+      background: rgba(13,18,32,0.7);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-xl);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      overflow: hidden;
+    }
+
+    .panel-header {
+      padding: 18px 20px 14px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .panel-title {
+      font-family: 'Syne', sans-serif;
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--text-secondary);
+    }
+
+    .panel-body { padding: 14px; }
+
+    .search-bar {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 12px;
+    }
+
+    .input-wrap {
+      position: relative;
+      flex: 1;
+    }
+
+    .input-icon {
+      position: absolute;
+      left: 12px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--text-muted);
+      font-size: 13px;
+      pointer-events: none;
+    }
+
+    input, select, textarea {
+      font-family: 'DM Sans', sans-serif;
+      font-size: 13.5px;
+      color: var(--text-primary);
+      background: rgba(255,255,255,0.04);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      transition: all var(--transition);
+      outline: none;
+    }
+
+    input:focus, select:focus, textarea:focus {
+      border-color: var(--border-active);
+      background: rgba(99,179,237,0.05);
+      box-shadow: 0 0 0 3px rgba(99,179,237,0.08);
+    }
+
+    .search-input {
+      width: 100%;
+      padding: 9px 12px 9px 34px;
+    }
+
+    .filter-select {
+      padding: 9px 10px;
+      cursor: pointer;
+      min-width: 90px;
+    }
+
+    select option {
+      background: var(--bg-2);
+      color: var(--text-primary);
+    }
+
+    #snippets-list {
+      max-height: calc(100vh - 260px);
+      overflow-y: auto;
+      padding-right: 2px;
+    }
+
+    #snippets-list::-webkit-scrollbar { width: 4px; }
+    #snippets-list::-webkit-scrollbar-track { background: transparent; }
+    #snippets-list::-webkit-scrollbar-thumb { background: var(--bg-4); border-radius: 4px; }
+
+    .snippet-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 14px 16px;
+      cursor: pointer;
+      transition: all var(--transition);
+      margin-bottom: 8px;
+      position: relative;
+      overflow: hidden;
+      animation: fadeInUp 0.4s cubic-bezier(0.4,0,0.2,1) both;
+    }
+
+    .snippet-card::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 0;
+      bottom: 0;
+      width: 3px;
+      background: linear-gradient(to bottom, var(--accent-1), var(--accent-3));
+      opacity: 0;
+      transition: opacity var(--transition);
+    }
+
+    .snippet-card:hover {
+      background: var(--surface-hover);
+      border-color: rgba(255,255,255,0.1);
+      transform: translateX(3px);
+    }
+
+    .snippet-card:hover::before { opacity: 1; }
+
+    .snippet-card.active {
+      background: rgba(99,179,237,0.08);
+      border-color: rgba(99,179,237,0.25);
+    }
+    .snippet-card.active::before { opacity: 1; }
+
+    @keyframes fadeInUp {
+      from { opacity: 0; transform: translateY(8px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .snippet-card-title {
+      font-family: 'Syne', sans-serif;
+      font-size: 13.5px;
+      font-weight: 700;
+      color: var(--text-primary);
+      margin-bottom: 7px;
+      line-height: 1.3;
+    }
+
+    .tag-row { display: flex; flex-wrap: wrap; gap: 5px; margin-bottom: 10px; }
+
+    .tag {
+      font-size: 11px;
+      font-weight: 500;
+      padding: 2px 8px;
+      border-radius: 20px;
+      background: rgba(255,255,255,0.06);
+      border: 1px solid rgba(255,255,255,0.09);
+      color: var(--text-secondary);
+      letter-spacing: 0.02em;
+    }
+
+    .tag-blue { background: rgba(99,179,237,0.12); border-color: rgba(99,179,237,0.2); color: var(--accent-1); }
+    .tag-purple { background: rgba(159,122,234,0.12); border-color: rgba(159,122,234,0.2); color: var(--accent-3); }
+    .tag-teal { background: rgba(118,228,247,0.1); border-color: rgba(118,228,247,0.2); color: var(--accent-2); }
+
+    .snippet-meta {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-size: 11.5px;
+      color: var(--text-muted);
+    }
+
+    .meta-item { display: flex; align-items: center; gap: 5px; }
+
+    .lang-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+
+    .lang-js { background: #f7df1e; }
+    .lang-python { background: #3776ab; }
+    .lang-java { background: #ed8b00; }
+    .lang-c { background: #a8b9cc; }
+    .lang-plain { background: #8899b0; }
+
+    .delete-btn, .edit-btn {
+      position: absolute;
+      top: 10px;
+      width: 26px;
+      height: 26px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 11px;
+      cursor: pointer;
+      opacity: 0;
+      transition: all var(--transition);
+    }
+    .delete-btn {
+      right: 10px;
+      background: rgba(252,129,129,0.1);
+      border: 1px solid rgba(252,129,129,0.15);
+      color: var(--danger);
+    }
+    .edit-btn {
+      right: 42px;
+      background: rgba(99,179,237,0.1);
+      border: 1px solid rgba(99,179,237,0.15);
+      color: var(--accent-1);
+    }
+    .snippet-card:hover .delete-btn,
+    .snippet-card:hover .edit-btn {
+      opacity: 1;
+    }
+    .delete-btn:hover { background: rgba(252,129,129,0.2); transform: scale(1.1); }
+    .edit-btn:hover { background: rgba(99,179,237,0.2); transform: scale(1.1); }
+
+    .empty-state {
+      text-align: center;
+      padding: 40px 20px;
+      color: var(--text-muted);
+    }
+
+    .empty-state i { font-size: 32px; margin-bottom: 12px; display: block; opacity: 0.4; }
+    .empty-state p { font-size: 13.5px; }
+
+    #snippet-viewer {
+      animation: fadeInRight 0.6s cubic-bezier(0.4,0,0.2,1) 0.15s both;
+    }
+
+    @keyframes fadeInRight {
+      from { opacity: 0; transform: translateX(20px); }
+      to { opacity: 1; transform: translateX(0); }
+    }
+
+    .viewer-empty {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 80px 40px;
+      text-align: center;
+      background: rgba(13,18,32,0.7);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-xl);
+      backdrop-filter: blur(12px);
+    }
+
+    .viewer-empty-icon {
+      width: 80px;
+      height: 80px;
+      background: linear-gradient(135deg, rgba(99,179,237,0.1), rgba(159,122,234,0.1));
+      border: 1px solid rgba(99,179,237,0.15);
+      border-radius: var(--radius-xl);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 32px;
+      color: var(--accent-1);
+      margin-bottom: 24px;
+      animation: pulse 3s ease-in-out infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { box-shadow: 0 0 0 0 rgba(99,179,237,0.15); }
+      50% { box-shadow: 0 0 0 12px rgba(99,179,237,0); }
+    }
+
+    .viewer-empty h3 {
+      font-family: 'Syne', sans-serif;
+      font-size: 1.3rem;
+      font-weight: 700;
+      color: var(--text-primary);
+      margin-bottom: 10px;
+    }
+
+    .viewer-empty p {
+      font-size: 14px;
+      color: var(--text-secondary);
+      max-width: 280px;
+      line-height: 1.6;
+    }
+
+    .viewer-panel {
+      background: rgba(13,18,32,0.7);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-xl);
+      backdrop-filter: blur(12px);
+      overflow: hidden;
+    }
+
+    .viewer-header {
+      padding: 24px 28px;
+      border-bottom: 1px solid var(--border);
+      background: rgba(255,255,255,0.02);
+    }
+
+    .viewer-title {
+      font-family: 'Syne', sans-serif;
+      font-size: 1.5rem;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      background: linear-gradient(to right, var(--text-primary), var(--accent-1));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin-bottom: 12px;
+      line-height: 1.2;
+    }
+
+    .viewer-meta {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+
+    .viewer-actions { display: flex; gap: 8px; }
+
+    .code-container {
+      padding: 0;
+      overflow-x: auto;
+      background: #0a0f1c;
+    }
+
+    .code-container::-webkit-scrollbar { height: 6px; }
+    .code-container::-webkit-scrollbar-track { background: #0a0f1c; }
+    .code-container::-webkit-scrollbar-thumb { background: var(--bg-4); border-radius: 3px; }
+
+    .code-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-family: 'DM Mono', monospace;
+      font-size: 13px;
+      line-height: 1.7;
+    }
+
+    .code-table tr { position: relative; }
+
+    .code-table tr:hover > td { background: rgba(99,179,237,0.04); }
+
+    .code-table tr.has-comments > td { background: rgba(99,179,237,0.05); }
+
+    .line-num-cell {
+      width: 52px;
+      text-align: right;
+      padding: 0 16px 0 12px;
+      color: var(--text-muted);
+      font-size: 12px;
+      user-select: none;
+      border-right: 1px solid rgba(255,255,255,0.05);
+      vertical-align: top;
+      padding-top: 1px;
+    }
+
+    .line-code-cell {
+      padding: 1px 20px 1px 16px;
+      cursor: pointer;
+      white-space: pre-wrap;
+      word-break: break-all;
+      vertical-align: top;
+    }
+
+    .line-code-cell code { background: transparent !important; padding: 0 !important; }
+
+    .add-comment-hint {
+      position: absolute;
+      right: 8px;
+      top: 50%;
+      transform: translateY(-50%);
+      opacity: 0;
+      transition: opacity var(--transition);
+      font-size: 11px;
+      color: var(--accent-1);
+      background: rgba(99,179,237,0.12);
+      border: 1px solid rgba(99,179,237,0.2);
+      padding: 2px 8px;
+      border-radius: 4px;
+      pointer-events: none;
+    }
+
+    .code-table tr:hover .add-comment-hint { opacity: 1; }
+
+    .comment-thread-row td {
+      padding: 0 20px 12px 68px;
+    }
+
+    .comment-thread {
+      border-left: 2px solid rgba(99,179,237,0.3);
+      padding-left: 16px;
+    }
+
+    .comment-card {
+      background: rgba(99,179,237,0.05);
+      border: 1px solid rgba(99,179,237,0.12);
+      border-radius: var(--radius-md);
+      padding: 12px 14px;
+      margin-bottom: 8px;
+      animation: commentIn 0.3s cubic-bezier(0.4,0,0.2,1) both;
+    }
+
+    @keyframes commentIn {
+      from { opacity: 0; transform: translateY(-6px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .comment-header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 8px;
+    }
+
+    .comment-avatar {
+      width: 26px;
+      height: 26px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--accent-1), var(--accent-3));
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 11px;
+      font-weight: 700;
+      color: white;
+      flex-shrink: 0;
+    }
+
+    .comment-author { font-size: 12.5px; font-weight: 600; color: var(--accent-1); }
+    .comment-time { font-size: 11px; color: var(--text-muted); }
+    .comment-body { font-size: 13px; color: var(--text-secondary); line-height: 1.6; }
+
+    .viewer-footer {
+      padding: 14px 24px;
+      border-top: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 12.5px;
+      color: var(--text-muted);
+      background: rgba(255,255,255,0.01);
+    }
+
+    .click-hint {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      padding: 6px 12px;
+      background: rgba(99,179,237,0.08);
+      border: 1px solid rgba(99,179,237,0.15);
+      border-radius: 20px;
+      color: var(--accent-1);
+      font-size: 12px;
+    }
+
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.7);
+      backdrop-filter: blur(6px);
+      -webkit-backdrop-filter: blur(6px);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 200;
+      padding: 20px;
+      animation: overlayIn 0.2s ease both;
+    }
+
+    .modal-overlay.open {
+      display: flex;
+    }
+
+    @keyframes overlayIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+
+    .modal {
+      background: rgba(13,18,32,0.97);
+      border: 1px solid rgba(255,255,255,0.09);
+      border-radius: var(--radius-xl);
+      width: 100%;
+      max-height: 90vh;
+      overflow-y: auto;
+      box-shadow: 0 30px 80px rgba(0,0,0,0.5), 0 0 0 1px rgba(99,179,237,0.05);
+      animation: modalIn 0.3s cubic-bezier(0.34,1.56,0.64,1) both;
+    }
+
+    @keyframes modalIn {
+      from { opacity: 0; transform: scale(0.92) translateY(10px); }
+      to { opacity: 1; transform: scale(1) translateY(0); }
+    }
+
+    .modal::-webkit-scrollbar { width: 4px; }
+    .modal::-webkit-scrollbar-thumb { background: var(--bg-4); border-radius: 4px; }
+
+    .modal-header {
+      padding: 28px 28px 20px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .modal-title {
+      font-family: 'Syne', sans-serif;
+      font-size: 1.3rem;
+      font-weight: 800;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .modal-title-icon {
+      width: 36px;
+      height: 36px;
+      border-radius: var(--radius-md);
+      background: linear-gradient(135deg, rgba(99,179,237,0.2), rgba(159,122,234,0.2));
+      border: 1px solid rgba(99,179,237,0.2);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 15px;
+      color: var(--accent-1);
+    }
+
+    .modal-close {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      color: var(--text-secondary);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all var(--transition);
+      font-size: 14px;
+    }
+    .modal-close:hover { background: var(--surface-hover); color: var(--text-primary); transform: rotate(90deg); }
+
+    .modal-body { padding: 24px 28px; }
+
+    .form-group { margin-bottom: 16px; }
+
+    .form-label {
+      display: block;
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: var(--text-secondary);
+      margin-bottom: 8px;
+    }
+
+    .form-input {
+      width: 100%;
+      padding: 10px 14px;
+    }
+
+    .form-row { display: flex; gap: 12px; }
+    .form-row .form-group { flex: 1; }
+
+    .form-textarea {
+      width: 100%;
+      padding: 12px 14px;
+      resize: vertical;
+      font-family: 'DM Mono', monospace;
+      font-size: 12.5px;
+      line-height: 1.7;
+      min-height: 260px;
+    }
+
+    .modal-footer {
+      padding: 16px 28px 28px;
+      display: flex;
+      justify-content: flex-end;
+      gap: 10px;
+    }
+
+    .modal-link {
+      text-align: center;
+      margin-top: 16px;
+      font-size: 13px;
+      color: var(--text-secondary);
+    }
+
+    .modal-link a {
+      color: var(--accent-1);
+      text-decoration: none;
+      font-weight: 500;
+    }
+    .modal-link a:hover { text-decoration: underline; }
+
+    hr.divider {
+      border: none;
+      border-top: 1px solid var(--border);
+      margin: 0;
+    }
+
+    #toast {
+      position: fixed;
+      bottom: 28px;
+      right: 28px;
+      z-index: 9999;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .toast-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 12px 18px;
+      background: rgba(13,18,32,0.97);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      box-shadow: 0 10px 30px rgba(0,0,0,0.4);
+      font-size: 13.5px;
+      animation: toastIn 0.35s cubic-bezier(0.34,1.56,0.64,1) both;
+      max-width: 320px;
+    }
+
+    .toast-item.success { border-color: rgba(104,211,145,0.3); }
+    .toast-item.error { border-color: rgba(252,129,129,0.3); }
+
+    @keyframes toastIn {
+      from { opacity: 0; transform: translateX(20px) scale(0.95); }
+      to { opacity: 1; transform: translateX(0) scale(1); }
+    }
+
+    @keyframes toastOut {
+      to { opacity: 0; transform: translateX(20px) scale(0.95); }
+    }
+
+    pre[class*="language-"], code[class*="language-"] {
+      text-shadow: none !important;
+      background: transparent !important;
+    }
+
+    .token.comment, .token.prolog, .token.doctype, .token.cdata { color: #546e8a; }
+    .token.keyword { color: #c792ea; }
+    .token.string { color: #c3e88d; }
+    .token.number { color: #f78c6c; }
+    .token.function { color: #82aaff; }
+    .token.operator { color: #89ddff; }
+    .token.class-name { color: #ffcb6b; }
+    .token.punctuation { color: #89ddff; }
+    .token.builtin { color: #82aaff; }
+
+    .spinner {
+      width: 20px;
+      height: 20px;
+      border: 2px solid var(--border);
+      border-top-color: var(--accent-1);
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+      display: inline-block;
+    }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    [data-tip] { position: relative; }
+    [data-tip]::after {
+      content: attr(data-tip);
+      position: absolute;
+      bottom: calc(100% + 6px);
+      left: 50%;
+      transform: translateX(-50%);
+      background: var(--bg-3);
+      border: 1px solid var(--border);
+      color: var(--text-primary);
+      font-size: 11.5px;
+      padding: 4px 10px;
+      border-radius: 6px;
+      white-space: nowrap;
+      pointer-events: none;
+      opacity: 0;
+      transition: opacity 0.15s;
+    }
+    [data-tip]:hover::after { opacity: 1; }
+
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: var(--bg-4); border-radius: 6px; }
+    ::-webkit-scrollbar-thumb:hover { background: var(--bg-3); }
+
+    /* Additional style for output panel */
+    #run-output {
+      margin: 0 24px 24px 24px;
+      background: #0a0f1c;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      padding: 12px;
+    }
+    #run-output pre {
+      font-family: 'DM Mono', monospace;
+      font-size: 12px;
+      margin: 0;
+      white-space: pre-wrap;
+      color: var(--text-secondary);
+    }
+    #run-output button {
+      background: none;
+      border: none;
+      color: var(--text-muted);
+      cursor: pointer;
+    }
+    #run-output button:hover { color: var(--accent-1); }
+
+    /* AI review badge */
+    .ai-rating {
+      display: inline-block;
+      padding: 4px 12px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 600;
+      margin-bottom: 16px;
+    }
+    .ai-rating.excellent { background: rgba(104,211,145,0.15); color: #68d391; border: 1px solid rgba(104,211,145,0.3); }
+    .ai-rating.good_with_suggestions { background: rgba(246,173,85,0.15); color: #f6ad55; border: 1px solid rgba(246,173,85,0.3); }
+    .ai-rating.needs_fix { background: rgba(252,129,129,0.15); color: #fc8181; border: 1px solid rgba(252,129,129,0.3); }
+    .ai-rating.unknown { background: rgba(136,153,176,0.15); color: #8899b0; border: 1px solid rgba(136,153,176,0.3); }
+  </style>
+</head>
+<body>
+
+<div id="app">
+  <header>
+    <div class="logo">
+      <div class="logo-icon"><i class="fas fa-code-branch"></i></div>
+      <span class="logo-text">CodeCollab</span>
+      <!-- <span class="logo-badge">Beta</span> -->
+    </div>
+    <div id="auth-section"></div>
+  </header>
+
+  <div class="main-grid">
+    <div class="sidebar">
+      <div class="panel">
+        <div class="panel-header">
+          <i class="fas fa-layer-group" style="color:var(--accent-1); font-size:13px;"></i>
+          <span class="panel-title">Snippets</span>
+          <span id="snippet-count" style="margin-left:auto; font-size:12px; color:var(--text-muted); background:var(--surface); border:1px solid var(--border); padding:2px 8px; border-radius:20px;"></span>
+        </div>
+        <div class="panel-body">
+          <div class="search-bar">
+            <div class="input-wrap">
+              <i class="fas fa-search input-icon"></i>
+              <input type="text" id="search-input" placeholder="Search snippets..." class="search-input">
+            </div>
+            <select id="tag-filter" class="filter-select">
+              <option value="">All tags</option>
+            </select>
+          </div>
+          <div id="snippets-list">
+            <div class="empty-state"><span class="spinner"></span></div>
+          </div>
+        </div>
+      </div>
+
+      <div style="padding: 12px 0 0; display:flex; gap:8px;">
+        <button id="new-snippet-btn" class="btn btn-primary" style="flex:1; justify-content:center;">
+          <i class="fas fa-plus"></i> New Snippet
+        </button>
+      </div>
+    </div>
+
+    <div id="snippet-viewer">
+      <div class="viewer-empty">
+        <div class="viewer-empty-icon"><i class="fas fa-code"></i></div>
+        <h3>Start reviewing</h3>
+        <p>Select a snippet from the sidebar or create a new one to begin your code review session.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<!-- LOGIN MODAL -->
+<div id="login-modal" class="modal-overlay">
+  <div class="modal" style="max-width:420px;">
+    <div class="modal-header">
+      <div class="modal-title"><div class="modal-title-icon"><i class="fas fa-lock"></i></div>Welcome back</div>
+      <button class="modal-close" data-close="login-modal"><i class="fas fa-xmark"></i></button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group"><label class="form-label">Username</label><input type="text" id="login-username" class="form-input" placeholder="Enter your username" autocomplete="username"></div>
+      <div class="form-group"><label class="form-label">Password</label><input type="password" id="login-password" class="form-input" placeholder="Enter your password" autocomplete="current-password"></div>
+      <div class="modal-link">Don't have an account? <a href="#" id="switch-to-register">Create one</a></div>
+    </div>
+    <div class="modal-footer"><button class="btn btn-ghost" data-close="login-modal">Cancel</button><button id="login-submit-btn" class="btn btn-primary"><i class="fas fa-arrow-right-to-bracket"></i> Sign In</button></div>
+  </div>
+</div>
+
+<!-- REGISTER MODAL -->
+<div id="register-modal" class="modal-overlay">
+  <div class="modal" style="max-width:420px;">
+    <div class="modal-header"><div class="modal-title"><div class="modal-title-icon"><i class="fas fa-user-plus"></i></div>Join CodeCollab</div><button class="modal-close" data-close="register-modal"><i class="fas fa-xmark"></i></button></div>
+    <div class="modal-body">
+      <div class="form-group"><label class="form-label">Username</label><input type="text" id="reg-username" class="form-input" placeholder="Choose a username" autocomplete="username"></div>
+      <div class="form-group"><label class="form-label">Password</label><input type="password" id="reg-password" class="form-input" placeholder="Choose a password" autocomplete="new-password"></div>
+      <div class="modal-link">Already have an account? <a href="#" id="switch-to-login">Sign in</a></div>
+    </div>
+    <div class="modal-footer"><button class="btn btn-ghost" data-close="register-modal">Cancel</button><button id="register-submit-btn" class="btn btn-primary"><i class="fas fa-user-plus"></i> Create Account</button></div>
+  </div>
+</div>
+
+<!-- SNIPPET MODAL -->
+<div id="snippet-modal" class="modal-overlay"><div class="modal" style="max-width:720px;"><div class="modal-header"><div class="modal-title" id="modal-title-wrap"><div class="modal-title-icon"><i class="fas fa-file-code"></i></div>Create Snippet</div><button class="modal-close" data-close="snippet-modal"><i class="fas fa-xmark"></i></button></div><div class="modal-body"><div class="form-group"><label class="form-label">Title</label><input type="text" id="snippet-title" class="form-input" placeholder="e.g. Binary Search Implementation"></div><div class="form-row"><div class="form-group"><label class="form-label">Language</label><select id="snippet-language" class="form-input"><option value="javascript">JavaScript</option><option value="python">Python</option><option value="java">Java</option><option value="c">C</option><option value="plain">Plain Text</option></select></div><div class="form-group"><label class="form-label">Tags (comma separated)</label><input type="text" id="snippet-tags" class="form-input" placeholder="algorithm, sort, utils"></div></div><div class="form-group"><label class="form-label">Code</label><textarea id="snippet-code" class="form-textarea" placeholder="// Paste or type your code here..."></textarea></div></div><div class="modal-footer"><button class="btn btn-ghost" data-close="snippet-modal">Cancel</button><button id="save-snippet-btn" class="btn btn-primary"><i class="fas fa-floppy-disk"></i> Save Snippet</button></div></div></div>
+
+<!-- COMMENT MODAL -->
+<div id="comment-modal" class="modal-overlay"><div class="modal" style="max-width:460px;"><div class="modal-header"><div class="modal-title"><div class="modal-title-icon"><i class="fas fa-comment-code"></i></div>Review Comment</div><button class="modal-close" data-close="comment-modal"><i class="fas fa-xmark"></i></button></div><div class="modal-body"><div style="display:flex; align-items:center; gap:8px; margin-bottom:16px; font-size:13px; color:var(--text-secondary);"><i class="fas fa-arrow-right" style="color:var(--accent-1); font-size:11px;"></i>Commenting on line <span id="comment-line-num" style="font-family:'DM Mono',monospace; background:rgba(99,179,237,0.12); border:1px solid rgba(99,179,237,0.2); color:var(--accent-1); padding:2px 8px; border-radius:6px; margin-left:2px;"></span></div><div class="form-group"><label class="form-label">Your Feedback</label><textarea id="comment-text" class="form-input" rows="5" style="resize:vertical; font-family:'DM Sans',sans-serif; padding:12px 14px;" placeholder="Share your thoughts, suggestions, or issues..."></textarea></div></div><div class="modal-footer"><button class="btn btn-ghost" data-close="comment-modal">Cancel</button><button id="save-comment-btn" class="btn btn-primary"><i class="fas fa-paper-plane"></i> Post Comment</button></div></div></div>
+
+<!-- AI DEBUG MODAL -->
+<div id="ai-debug-modal" class="modal-overlay">
+  <div class="modal" style="max-width:600px;">
+    <div class="modal-header">
+      <div class="modal-title"><div class="modal-title-icon"><i class="fas fa-robot"></i></div>AI Debug Report</div>
+      <button class="modal-close" data-close="ai-debug-modal"><i class="fas fa-xmark"></i></button>
+    </div>
+    <div class="modal-body">
+      <div id="ai-debug-content">
+        <div style="text-align:center; padding:20px;"><span class="spinner"></span> Running code and analyzing...</div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" data-close="ai-debug-modal">Close</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  // ==================== BACKEND API INTEGRATION ====================
+  const API_BASE = 'http://localhost:3000';
+
+  let currentUser = null;
+  let snippets = [];
+  let activeSnippetId = null;
+
+  function getAuthHeaders() {
+    const token = localStorage.getItem('cc_token');
+    return {
+      'Content-Type': 'application/json',
+      'Authorization': token ? `Bearer ${token}` : ''
+    };
+  }
+
+  // ---------- Auth ----------
+  async function login(username, password) {
+    try {
+      const res = await fetch(`${API_BASE}/api/login`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username, password })
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Login failed');
+      localStorage.setItem('cc_token', data.token);
+      const payload = JSON.parse(atob(data.token.split('.')[1]));
+      currentUser = { id: payload.id, username: payload.username };
+      updateAuthUI();
+      await loadSnippets();
+      toast(`Welcome back, ${username}!`, 'success');
+      return true;
+    } catch (err) {
+      toast(err.message, 'error');
+      return false;
+    }
+  }
+
+  async function register(username, password) {
+    if (username.length < 3) { toast('Username must be at least 3 characters', 'error'); return false; }
+    if (password.length < 4) { toast('Password must be at least 4 characters', 'error'); return false; }
+    try {
+      const res = await fetch(`${API_BASE}/api/register`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username, password })
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Registration failed');
+      toast('Account created! Please sign in.', 'success');
+      return true;
+    } catch (err) {
+      toast(err.message, 'error');
+      return false;
+    }
+  }
+
+  function logout(silent = false) {
+    const name = currentUser?.username;
+    currentUser = null;
+    localStorage.removeItem('cc_token');
+    updateAuthUI();
+    snippets = [];
+    activeSnippetId = null;
+    renderSnippetList();
+    showEmpty();
+    if (!silent && name) toast(`Goodbye, ${name}!`, 'success');
+  }
+
+  // ---------- Snippet API ----------
+  async function loadSnippets(search = '', tag = '') {
+    try {
+      let url = `${API_BASE}/api/snippets`;
+      const params = new URLSearchParams();
+      if (search) params.append('search', search);
+      if (tag) params.append('tag', tag);
+      if (params.toString()) url += '?' + params.toString();
+      const res = await fetch(url);
+      if (!res.ok) throw new Error('Failed to load snippets');
+      snippets = await res.json();
+      renderSnippetList();
+      return snippets;
+    } catch (err) {
+      toast(err.message, 'error');
+      return [];
+    }
+  }
+
+  async function fetchSnippetWithComments(id) {
+    try {
+      const res = await fetch(`${API_BASE}/api/snippets/${id}`);
+      if (!res.ok) throw new Error('Failed to load snippet');
+      const data = await res.json();
+      return data;
+    } catch (err) {
+      toast(err.message, 'error');
+      return null;
+    }
+  }
+
+  async function createSnippet(title, language, tagsStr, code) {
+    if (!currentUser) { toast('Please sign in', 'error'); return null; }
+    try {
+      const res = await fetch(`${API_BASE}/api/snippets`, {
+        method: 'POST',
+        headers: getAuthHeaders(),
+        body: JSON.stringify({ title, language, tags: tagsStr, code })
+      });
+      if (!res.ok) throw new Error((await res.json()).error || 'Creation failed');
+      const newSnippet = await res.json();
+      snippets.unshift(newSnippet);
+      renderSnippetList();
+      viewSnippet(newSnippet.id);
+      toast('Snippet created!', 'success');
+      return newSnippet;
+    } catch (err) {
+      toast(err.message, 'error');
+      return null;
+    }
+  }
+
+  async function updateSnippet(id, title, language, tagsStr, code) {
+    if (!currentUser) return;
+    try {
+      const res = await fetch(`${API_BASE}/api/snippets/${id}`, {
+        method: 'PUT',
+        headers: getAuthHeaders(),
+        body: JSON.stringify({ title, language, tags: tagsStr, code })
+      });
+      if (!res.ok) throw new Error((await res.json()).error || 'Update failed');
+      const updated = await res.json();
+      const idx = snippets.findIndex(s => s.id === id);
+      if (idx !== -1) snippets[idx] = updated;
+      renderSnippetList();
+      viewSnippet(id);
+      toast('Snippet updated!', 'success');
+    } catch (err) {
+      toast(err.message, 'error');
+    }
+  }
+
+  async function deleteSnippet(id) {
+    if (!currentUser) return;
+    try {
+      const res = await fetch(`${API_BASE}/api/snippets/${id}`, {
+        method: 'DELETE',
+        headers: getAuthHeaders()
+      });
+      if (!res.ok) throw new Error((await res.json()).error || 'Delete failed');
+      snippets = snippets.filter(s => s.id !== id);
+      if (activeSnippetId === id) {
+        activeSnippetId = null;
+        showEmpty();
+      }
+      renderSnippetList();
+      toast('Snippet deleted', 'success');
+    } catch (err) {
+      toast(err.message, 'error');
+    }
+  }
+
+  async function addComment(snippetId, lineNumber, content) {
+    if (!currentUser) { toast('Please sign in to comment', 'error'); return null; }
+    try {
+      const res = await fetch(`${API_BASE}/api/comments`, {
+        method: 'POST',
+        headers: getAuthHeaders(),
+        body: JSON.stringify({ snippetId, lineNumber, content })
+      });
+      if (!res.ok) throw new Error((await res.json()).error || 'Comment failed');
+      const newComment = await res.json();
+      await viewSnippet(snippetId);
+      toast('Comment posted!', 'success');
+      return newComment;
+    } catch (err) {
+      toast(err.message, 'error');
+      return null;
+    }
+  }
+
+  // ---------- AI Debug ----------
+  async function aiDebug(code, language) {
+    try {
+      const res = await fetch(`${API_BASE}/api/ai-debug`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ code, language })
+      });
+      if (!res.ok) throw new Error('Debug failed');
+      return await res.json();
+    } catch (err) {
+      toast(err.message, 'error');
+      return null;
+    }
+  }
+
+  function showAIDebugModal(code, language) {
+    const modal = document.getElementById('ai-debug-modal');
+    const contentDiv = document.getElementById('ai-debug-content');
+    contentDiv.innerHTML = '<div style="text-align:center; padding:20px;"><span class="spinner"></span> Running code and analyzing...</div>';
+    openModal('ai-debug-modal');
+    
+    aiDebug(code, language).then(data => {
+      if (!data) {
+        contentDiv.innerHTML = '<div style="color:var(--danger); text-align:center;">Failed to get debug info. Please try again.</div>';
+        return;
+      }
+      let html = '';
+      if (!data.success) {
+        html = `
+          <div class="ai-rating needs_fix">❌ Code execution failed</div>
+          <div style="margin-bottom:12px;"><strong>Error:</strong> <pre style="background:#1a1a2e; padding:8px; border-radius:6px; overflow-x:auto;">${esc(data.error)}</pre></div>
+          <div><strong>🔍 Explanation:</strong><p>${esc(data.explanation)}</p></div>
+          <div><strong>💡 Suggestions:</strong><ul>${data.suggestions.map(s => `<li>${esc(s)}</li>`).join('')}</ul></div>
+        `;
+      } else {
+        html = `<div class="ai-rating excellent">✅ Code executed successfully</div>`;
+        if (data.output) {
+          html += `<div><strong>Output:</strong><pre style="background:#1a1a2e; padding:8px; border-radius:6px; overflow-x:auto;">${esc(data.output)}</pre></div>`;
+        }
+        if (data.issues && data.issues.length) {
+          html += `<div style="margin-top:12px;"><strong style="color:var(--danger);">⚠️ Issues</strong><ul>${data.issues.map(i => `<li>${esc(i)}</li>`).join('')}</ul></div>`;
+        }
+        if (data.suggestions && data.suggestions.length) {
+          html += `<div><strong style="color:var(--accent-1);">💡 Suggestions</strong><ul>${data.suggestions.map(s => `<li>${esc(s)}</li>`).join('')}</ul></div>`;
+        }
+        if ((!data.issues || !data.issues.length) && (!data.suggestions || !data.suggestions.length)) {
+          html += `<p style="color:var(--success); margin-top:12px;">No further issues found. Great job!</p>`;
+        }
+      }
+      contentDiv.innerHTML = html;
+    });
+  }
+
+  // ---------- Render UI ----------
+  function updateAuthUI() {
+    const el = document.getElementById('auth-section');
+    if (currentUser) {
+      el.innerHTML = `<div class="user-chip"><div class="user-avatar">${esc(currentUser.username[0].toUpperCase())}</div><span style="font-size:13.5px; font-weight:500;">${esc(currentUser.username)}</span></div><button id="logout-btn" class="btn btn-ghost btn-sm"><i class="fas fa-arrow-right-from-bracket"></i> Sign out</button>`;
+      document.getElementById('logout-btn').onclick = () => logout();
+    } else {
+      el.innerHTML = `<button id="show-login-btn" class="btn btn-ghost btn-sm">Sign In</button><button id="show-register-btn" class="btn btn-primary btn-sm"><i class="fas fa-user-plus"></i> Register</button>`;
+      document.getElementById('show-login-btn').onclick = () => openModal('login-modal');
+      document.getElementById('show-register-btn').onclick = () => openModal('register-modal');
+    }
+  }
+
+  const tagColors = ['tag-blue', 'tag-purple', 'tag-teal', ''];
+  function getTagColor(tag, idx) { return tagColors[idx % tagColors.length]; }
+  const langDots = { javascript: 'lang-js', python: 'lang-python', java: 'lang-java', c: 'lang-c', plain: 'lang-plain' };
+
+  function renderSnippetList() {
+    const search = document.getElementById('search-input').value.toLowerCase();
+    const tag = document.getElementById('tag-filter').value;
+    let list = snippets;
+    if (search) list = list.filter(s => s.title.toLowerCase().includes(search) || s.code.toLowerCase().includes(search) || (s.tags && s.tags.some(t => t.toLowerCase().includes(search))));
+    if (tag) list = list.filter(s => s.tags && s.tags.includes(tag));
+    const allTags = [...new Set(snippets.flatMap(s => s.tags || []))];
+    const sel = document.getElementById('tag-filter');
+    const current = sel.value;
+    sel.innerHTML = '<option value="">All tags</option>' + allTags.map(t => `<option value="${esc(t)}">${esc(t)}</option>`).join('');
+    sel.value = allTags.includes(current) ? current : '';
+    document.getElementById('snippet-count').textContent = list.length;
+    const container = document.getElementById('snippets-list');
+    if (list.length === 0) {
+      container.innerHTML = `<div class="empty-state"><i class="fas fa-folder-open"></i><p>No snippets found</p></div>`;
+      return;
+    }
+    container.innerHTML = list.map((s, i) => `
+      <div class="snippet-card ${activeSnippetId === s.id ? 'active' : ''}" data-id="${s.id}" style="animation-delay:${i * 40}ms">
+        <div class="snippet-card-title">${esc(s.title)}</div>
+        <div class="tag-row">
+          ${(s.tags || []).map((t, ti) => `<span class="tag ${getTagColor(t,ti)}">${esc(t)}</span>`).join('')}
+        </div>
+        <div class="snippet-meta">
+          <span class="meta-item"><span class="lang-dot ${langDots[s.language] || 'lang-plain'}"></span>${s.language}</span>
+          <span class="meta-item"><i class="fas fa-clock"></i>${timeAgo(s.created_at)}</span>
+          <span class="meta-item"><i class="fas fa-comment"></i>${s.commentCount || 0}</span>
+        </div>
+        ${currentUser && s.created_by === currentUser.id ? `
+          <button class="edit-btn" data-id="${s.id}" title="Edit"><i class="fas fa-pen"></i></button>
+          <button class="delete-btn" data-id="${s.id}" title="Delete"><i class="fas fa-trash"></i></button>
+        ` : ''}
+      </div>
+    `).join('');
+    container.querySelectorAll('.snippet-card').forEach(el => {
+      el.addEventListener('click', e => {
+        if (e.target.closest('.delete-btn') || e.target.closest('.edit-btn')) return;
+        viewSnippet(parseInt(el.dataset.id));
+      });
+    });
+    container.querySelectorAll('.delete-btn').forEach(btn => {
+      btn.addEventListener('click', e => {
+        e.stopPropagation();
+        if (confirm('Delete this snippet and all its comments?')) deleteSnippet(parseInt(btn.dataset.id));
+      });
+    });
+    container.querySelectorAll('.edit-btn').forEach(btn => {
+      btn.addEventListener('click', e => {
+        e.stopPropagation();
+        const snippet = snippets.find(s => s.id === parseInt(btn.dataset.id));
+        if (snippet) openSnippetModal(snippet);
+      });
+    });
+  }
+
+  function showEmpty() {
+    document.getElementById('snippet-viewer').innerHTML = `
+      <div class="viewer-empty">
+        <div class="viewer-empty-icon"><i class="fas fa-code"></i></div>
+        <h3>Start reviewing</h3>
+        <p>Select a snippet from the sidebar or create a new one to begin your code review session.</p>
+      </div>
+    `;
+  }
+
+  async function viewSnippet(id) {
+    const data = await fetchSnippetWithComments(id);
+    if (!data) return;
+    const snippet = data.snippet;
+    const snippetComments = data.comments || [];
+    activeSnippetId = id;
+
+    document.querySelectorAll('.snippet-card').forEach(el => {
+      el.classList.toggle('active', parseInt(el.dataset.id) === id);
+    });
+
+    const grouped = {};
+    snippetComments.forEach(c => { (grouped[c.line_number] = grouped[c.line_number] || []).push(c); });
+    const lines = snippet.code.split('\n');
+    let tableRows = '';
+    lines.forEach((line, idx) => {
+      const lineNum = idx + 1;
+      const lineComments = grouped[lineNum] || [];
+      tableRows += `
+        <tr class="${lineComments.length ? 'has-comments' : ''}" data-line="${lineNum}">
+          <td class="line-num-cell">${lineNum}</td>
+          <td class="line-code-cell"><code class="language-${snippet.language}">${esc(line) || ' '}</code><span class="add-comment-hint"><i class="fas fa-plus"></i> comment</span></td>
+        </tr>
+      `;
+      if (lineComments.length) {
+        tableRows += `
+          <tr class="comment-thread-row">
+            <td colspan="2">
+              <div class="comment-thread">
+                ${lineComments.map(c => `
+                  <div class="comment-card">
+                    <div class="comment-header">
+                      <div class="comment-avatar">${esc(c.username[0].toUpperCase())}</div>
+                      <span class="comment-author">${esc(c.username)}</span>
+                      <span class="comment-time">${timeAgo(c.created_at)}</span>
+                    </div>
+                    <div class="comment-body">${esc(c.content)}</div>
+                  </div>
+                `).join('')}
+              </div>
+            </td>
+          </tr>
+        `;
+      }
+    });
+    const totalComments = snippetComments.length;
+
+    const viewerHTML = `
+      <div class="viewer-panel">
+        <div class="viewer-header">
+          <div style="display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:12px;">
+            <div style="flex:1; min-width:200px;">
+              <div class="viewer-title">${esc(snippet.title)}</div>
+              <div class="viewer-meta">
+                <span class="meta-item" style="font-size:12.5px; color:var(--text-secondary);"><span class="lang-dot ${langDots[snippet.language] || 'lang-plain'}"></span>${snippet.language}</span>
+                ${(snippet.tags || []).map((t, ti) => `<span class="tag ${getTagColor(t,ti)}">${esc(t)}</span>`).join('')}
+                <span class="meta-item" style="font-size:12px; color:var(--text-muted);"><i class="fas fa-comment"></i> ${totalComments} comment${totalComments !== 1 ? 's' : ''}</span>
+                <span class="meta-item" style="font-size:12px; color:var(--text-muted);"><i class="fas fa-lines-leaning"></i> ${lines.length} lines</span>
+              </div>
+            </div>
+            <div class="viewer-actions">
+              <button id="run-code-btn" class="btn btn-primary btn-sm"><i class="fas fa-play"></i> Run Code</button>
+              <button id="ai-debug-btn" class="btn btn-primary btn-sm" style="background: linear-gradient(135deg, #9f7aea, #63b3ed);"><i class="fas fa-robot"></i> AI Debug</button>
+              ${currentUser && snippet.created_by === currentUser.id ? `<button id="edit-snippet-btn" class="btn btn-ghost btn-sm"><i class="fas fa-pen"></i> Edit</button>` : ''}
+            </div>
+          </div>
+        </div>
+        <div class="code-container">
+          <table class="code-table" id="code-table">
+            <tbody>${tableRows}</tbody>
+          </table>
+        </div>
+        <div id="run-output" style="display:none;">
+          <div style="display:flex; justify-content:space-between; margin-bottom:8px;">
+            <span style="font-family: 'DM Mono', monospace; font-size:12px; color:var(--accent-1);"><i class="fas fa-terminal"></i> Output</span>
+            <button id="close-output" style="background:none; border:none; color:var(--text-muted); cursor:pointer;"><i class="fas fa-times"></i></button>
+          </div>
+          <pre id="output-content" style="font-family: 'DM Mono', monospace; font-size:12px; margin:0; white-space:pre-wrap; color:var(--text-secondary);"></pre>
+        </div>
+        <div class="viewer-footer">
+          ${currentUser ? `<span class="click-hint"><i class="fas fa-hand-pointer"></i> Click any line to add a review comment</span>` : `<span style="color:var(--text-muted); font-size:12.5px;"><i class="fas fa-lock" style="color:var(--accent-1); margin-right:6px;"></i> Sign in to leave review comments</span>`}
+        </div>
+      </div>
+    `;
+
+    document.getElementById('snippet-viewer').innerHTML = viewerHTML;
+    Prism.highlightAll();
+
+    document.querySelectorAll('#code-table tr[data-line]').forEach(row => {
+      row.addEventListener('click', () => {
+        if (!currentUser) { openModal('login-modal'); return; }
+        showCommentModal(snippet.id, parseInt(row.dataset.line));
+      });
+    });
+    document.getElementById('edit-snippet-btn')?.addEventListener('click', () => openSnippetModal(snippet));
+    document.getElementById('run-code-btn')?.addEventListener('click', async () => {
+      const outputDiv = document.getElementById('run-output');
+      const outputPre = document.getElementById('output-content');
+      outputDiv.style.display = 'block';
+      outputPre.textContent = 'Running...';
+      try {
+        const res = await fetch(`${API_BASE}/api/run`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ code: snippet.code, language: snippet.language })
+        });
+        const data = await res.json();
+        if (data.error) outputPre.textContent = `Error:\n${data.error}`;
+        else outputPre.textContent = data.output || '(no output)';
+      } catch (err) {
+        outputPre.textContent = `Failed to run: ${err.message}`;
+      }
+    });
+    document.getElementById('ai-debug-btn')?.addEventListener('click', () => {
+      showAIDebugModal(snippet.code, snippet.language);
+    });
+    document.getElementById('close-output')?.addEventListener('click', () => {
+      document.getElementById('run-output').style.display = 'none';
+    });
+  }
+
+  // ---------- Modals ----------
+  function openModal(id) { document.getElementById(id).classList.add('open'); setTimeout(() => { const inp = document.getElementById(id)?.querySelector('input'); if(inp) inp.focus(); }, 50); }
+  function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+
+  function openSnippetModal(snippet = null) {
+    document.getElementById('modal-title-wrap').innerHTML = `<div class="modal-title-icon"><i class="fas fa-file-code"></i></div>${snippet ? 'Edit Snippet' : 'Create Snippet'}`;
+    document.getElementById('snippet-title').value = snippet?.title || '';
+    document.getElementById('snippet-language').value = snippet?.language || 'javascript';
+    document.getElementById('snippet-tags').value = snippet?.tags ? snippet.tags.join(', ') : '';
+    document.getElementById('snippet-code').value = snippet?.code || '';
+    openModal('snippet-modal');
+    document.getElementById('save-snippet-btn').onclick = async () => {
+      const title = document.getElementById('snippet-title').value.trim();
+      if (!title) { toast('Title is required', 'error'); return; }
+      const lang = document.getElementById('snippet-language').value;
+      const tags = document.getElementById('snippet-tags').value;
+      const code = document.getElementById('snippet-code').value;
+      if (snippet) await updateSnippet(snippet.id, title, lang, tags, code);
+      else await createSnippet(title, lang, tags, code);
+      closeModal('snippet-modal');
+    };
+  }
+
+  function showCommentModal(snippetId, lineNum) {
+    document.getElementById('comment-line-num').textContent = lineNum;
+    document.getElementById('comment-text').value = '';
+    openModal('comment-modal');
+    document.getElementById('save-comment-btn').onclick = async () => {
+      const content = document.getElementById('comment-text').value.trim();
+      if (!content) { toast('Comment cannot be empty', 'error'); return; }
+      await addComment(snippetId, lineNum, content);
+      closeModal('comment-modal');
+    };
+  }
+
+  // ---------- Toast, Helpers, Events ----------
+  function toast(message, type = 'success') {
+    const container = document.getElementById('toast');
+    const icons = { success: 'fas fa-circle-check', error: 'fas fa-circle-xmark' };
+    const colors = { success: 'var(--success)', error: 'var(--danger)' };
+    const item = document.createElement('div');
+    item.className = `toast-item ${type}`;
+    item.innerHTML = `<i class="${icons[type]}" style="color:${colors[type]}; font-size:16px;"></i> ${esc(message)}`;
+    container.appendChild(item);
+    setTimeout(() => { item.style.animation = 'toastOut 0.3s ease forwards'; setTimeout(() => item.remove(), 300); }, 3000);
+  }
+
+  function esc(str) { if (!str) return ''; return String(str).replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m])); }
+  function timeAgo(iso) { const diff = Date.now() - new Date(iso).getTime(); if (diff < 60000) return 'just now'; if (diff < 3600000) return `${Math.floor(diff/60000)}m ago`; if (diff < 86400000) return `${Math.floor(diff/3600000)}h ago`; return `${Math.floor(diff/86400000)}d ago`; }
+
+  function setupEvents() {
+    document.querySelectorAll('[data-close]').forEach(btn => btn.addEventListener('click', () => closeModal(btn.dataset.close)));
+    document.querySelectorAll('.modal-overlay').forEach(overlay => overlay.addEventListener('click', e => { if (e.target === overlay) overlay.classList.remove('open'); }));
+    document.addEventListener('keydown', e => { if (e.key === 'Escape') document.querySelectorAll('.modal-overlay.open').forEach(m => m.classList.remove('open')); });
+    document.getElementById('switch-to-register').addEventListener('click', e => { e.preventDefault(); closeModal('login-modal'); openModal('register-modal'); });
+    document.getElementById('switch-to-login').addEventListener('click', e => { e.preventDefault(); closeModal('register-modal'); openModal('login-modal'); });
+    document.getElementById('login-submit-btn').addEventListener('click', async () => { const u = document.getElementById('login-username').value.trim(); const p = document.getElementById('login-password').value; if (!u || !p) { toast('Please fill all fields', 'error'); return; } if (await login(u, p)) closeModal('login-modal'); });
+    document.getElementById('login-password').addEventListener('keydown', e => { if (e.key === 'Enter') document.getElementById('login-submit-btn').click(); });
+    document.getElementById('register-submit-btn').addEventListener('click', async () => { const u = document.getElementById('reg-username').value.trim(); const p = document.getElementById('reg-password').value; if (!u || !p) { toast('Please fill all fields', 'error'); return; } if (await register(u, p)) { closeModal('register-modal'); openModal('login-modal'); } });
+    document.getElementById('reg-password').addEventListener('keydown', e => { if (e.key === 'Enter') document.getElementById('register-submit-btn').click(); });
+    document.getElementById('new-snippet-btn').addEventListener('click', () => { if (!currentUser) { openModal('login-modal'); return; } openSnippetModal(null); });
+    document.getElementById('search-input').addEventListener('input', () => loadSnippets(document.getElementById('search-input').value, document.getElementById('tag-filter').value));
+    document.getElementById('tag-filter').addEventListener('change', () => loadSnippets(document.getElementById('search-input').value, document.getElementById('tag-filter').value));
+  }
+
+  // ---------- Init ----------
+  async function init() {
+    const token = localStorage.getItem('cc_token');
+    if (token) {
+      try {
+        const payload = JSON.parse(atob(token.split('.')[1]));
+        if (payload.exp * 1000 > Date.now()) {
+          currentUser = { id: payload.id, username: payload.username };
+          updateAuthUI();
+          await loadSnippets();
+        } else {
+          logout(true);
+        }
+      } catch(e) { logout(true); }
+    } else {
+      updateAuthUI();
+      await loadSnippets();
+    }
+    setupEvents();
+  }
+
+  init();
+</script>
+</body>
+</html>
